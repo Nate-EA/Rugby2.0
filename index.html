@@ -1167,6 +1167,76 @@
             color: var(--light-blue);
             font-weight: 600;
         }
+
+        /* Resume modal styles */
+        .resume-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(1, 33, 105, 0.95);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .resume-content {
+            background: white;
+            padding: 32px;
+            border-radius: 16px;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .resume-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+
+        .resume-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 28px;
+            color: var(--niue-blue);
+            margin-bottom: 12px;
+            letter-spacing: 1px;
+        }
+
+        .resume-message {
+            color: var(--light-blue);
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        .resume-buttons {
+            display: grid;
+            gap: 12px;
+        }
+
+        .resume-btn {
+            padding: 16px;
+            border-radius: 10px;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+        }
+
+        .resume-yes {
+            background: var(--green);
+            color: white;
+            border: none;
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+        }
+
+        .resume-no {
+            background: transparent;
+            color: var(--niue-blue);
+            border: 2px solid var(--niue-blue);
+        }
     </style>
 </head>
 <body>
@@ -1289,7 +1359,7 @@
     <!-- Stats Tab -->
     <div id="statsTab" class="tab-content" style="display: none;">
         <div style="padding: 20px;">
-            <!-- Strength Score Card -->
+            <!-- Strength Score Card - NEW -->
             <div class="strength-score-card" id="strengthScoreCard">
                 <div class="strength-score-value" id="statsCoreScore">0</div>
                 <div class="strength-score-label">CORE STRENGTH SCORE</div>
@@ -1555,6 +1625,7 @@
             'Shoulder Press': { rookie: 10, built: 20, strong: 30, veteran: 40, elite: 50 },
             'Lat Pulldown': { rookie: 20, built: 35, strong: 50, veteran: 65, elite: 80 },
             'Barbell Row': { rookie: 20, built: 30, strong: 45, veteran: 60, elite: 75 },
+            // Include variations (these will be ACCESSORIES, not core)
             'Incline DB Bench Press': { rookie: 25, built: 35, strong: 45, veteran: 55, elite: 70 },
             'Romanian Deadlift': { rookie: 30, built: 45, strong: 60, veteran: 75, elite: 90 }
         };
@@ -1583,6 +1654,7 @@
                 const exercise = workout.exercise;
                 const max1RM = Math.max(...workout.sets.map(s => calculate1RM(s.weight, s.reps)));
                 
+                // Check if this is a core lift
                 if (coreLifts.includes(exercise)) {
                     if (!exerciseBest[exercise] || max1RM > exerciseBest[exercise]) {
                         exerciseBest[exercise] = max1RM;
@@ -1609,6 +1681,7 @@
                 const exercise = workout.exercise;
                 const max1RM = Math.max(...workout.sets.map(s => calculate1RM(s.weight, s.reps)));
                 
+                // If it's NOT a core lift, it's an accessory
                 if (!coreLifts.includes(exercise)) {
                     if (!accessoryBest[exercise] || max1RM > accessoryBest[exercise]) {
                         accessoryBest[exercise] = max1RM;
@@ -1650,6 +1723,7 @@
         function getTierAndProgress(currentWeight, exerciseName) {
             let standards = null;
             
+            // Map exercise names to matrix keys
             if (strengthMatrix[exerciseName]) {
                 standards = strengthMatrix[exerciseName];
             } else if (exerciseName.includes('Zercher')) {
@@ -1736,12 +1810,14 @@
             const workoutHistory = JSON.parse(localStorage.getItem('workoutHistory') || '[]');
             const container = document.getElementById('strengthMatrixGrid');
             
+            // Get best 1RM for each core lift
             const exerciseBest = {};
             
             workoutHistory.forEach(workout => {
                 const exercise = workout.exercise;
                 const max1RM = Math.max(...workout.sets.map(s => calculate1RM(s.weight, s.reps)));
                 
+                // Only track core lifts in the matrix
                 if (coreLifts.includes(exercise)) {
                     if (!exerciseBest[exercise] || max1RM > exerciseBest[exercise]) {
                         exerciseBest[exercise] = max1RM;
@@ -1749,6 +1825,7 @@
                 }
             });
             
+            // Check if any core lifts have data
             const hasData = coreLifts.some(lift => exerciseBest[lift]);
             
             if (!hasData) {
@@ -1756,12 +1833,13 @@
                     <div style="text-align: center; padding: 40px 20px;">
                         <div style="font-size: 48px; margin-bottom: 16px;">💪</div>
                         <div style="font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: var(--niue-blue); margin-bottom: 8px;">No Core Lift Data Yet</div>
-                        <div style="color: #888; font-size: 14px;">Log your main lifts to see your Strength Matrix</div>
+                        <div style="color: #888; font-size: 14px;">Log your main lifts (Zercher, Bench, Deadlift, etc.) to see your Strength Matrix</div>
                     </div>
                 `;
                 return;
             }
             
+            // Legend
             let html = `
                 <div style="margin-bottom: 20px;">
                     <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; padding: 12px; background: var(--pale-yellow); border-radius: 12px;">
@@ -1774,6 +1852,7 @@
                 </div>
             `;
             
+            // Icons for lifts
             const liftIcons = {
                 'Zercher Squat': '🦵',
                 'Bench Press': '🏋️',
@@ -1874,17 +1953,22 @@
             const thisWeek = getThisWeekWorkouts(history);
             const lastWeek = getLastWeekWorkouts(history);
             
+            // Calculate scores
             const coreScore = calculateCoreStrengthScore(history);
             const accessoryData = calculateAccessoryScore(history);
             const progress = calculateStrengthScoreProgress(history);
             
+            // Weekly workout count
             const thisWeekCount = new Set(thisWeek.map(w => new Date(w.date).toDateString())).size;
             const lastWeekCount = new Set(lastWeek.map(w => new Date(w.date).toDateString())).size;
             
+            // PR count
             const allPRs = countPRs(history);
             
+            // Best lifts count
             const uniqueExercises = new Set(history.map(w => w.exercise)).size;
             
+            // Update DOM
             document.getElementById('statsCoreScore').textContent = coreScore;
             document.getElementById('statsWeeklyWorkouts').textContent = thisWeekCount;
             document.getElementById('statsTotalPRs').textContent = allPRs;
@@ -1892,6 +1976,7 @@
             document.getElementById('statsAccessoryCount').textContent = accessoryData.count;
             document.getElementById('statsAccessoryInfo').textContent = `+${accessoryData.total}kg from ${accessoryData.count} accessories`;
             
+            // Trend
             let trendText = progress.weeklyChange > 0 
                 ? `↑ ${progress.weeklyChange} from last week` 
                 : progress.weeklyChange < 0 
@@ -1900,6 +1985,7 @@
             document.getElementById('statsScoreTrend').textContent = trendText;
             document.getElementById('statsScoreTrend').style.color = progress.weeklyChange > 0 ? 'var(--green)' : progress.weeklyChange < 0 ? 'var(--red)' : 'rgba(255,255,255,0.8)';
             
+            // Also update history tab stats
             document.getElementById('historyWeeklyWorkouts').textContent = thisWeekCount;
             document.getElementById('historyTotalPRs').textContent = allPRs;
             document.getElementById('historyBestLifts').textContent = uniqueExercises;
@@ -1911,7 +1997,7 @@
         }
 
         // ============================================
-        // HISTORY STACK FOR BACK BUTTON - FIXED
+        // HISTORY STACK FOR BACK BUTTON
         // ============================================
         const historyStack = {
             stack: ['home'],
@@ -1947,23 +2033,26 @@
         };
 
         // ============================================
-        // ANDROID BACK BUTTON HANDLER - FIXED
+        // ANDROID BACK BUTTON HANDLER
         // ============================================
         window.addEventListener('popstate', function(event) {
-            event.preventDefault();
+            // Don't use event.preventDefault() - breaks iOS Safari!
             
             const exerciseModal = document.getElementById('exerciseModal');
             const summaryModal = document.getElementById('summaryModal');
             
-            // Priority 1: Close open modals FIRST (no workout exit prompt)
+            // Priority 1: Close open modals (don't navigate back, just close)
             if (exerciseModal && exerciseModal.classList.contains('active')) {
-                closeModal();
-                return false;
+                exerciseModal.classList.remove('active');
+                historyStack.back();
+                history.pushState({ page: getCurrentPage(), timestamp: Date.now() }, '', '');
+                return;
             }
             
             if (summaryModal && summaryModal.classList.contains('active')) {
                 closeSummary();
-                return false;
+                history.pushState({ page: getCurrentPage(), timestamp: Date.now() }, '', '');
+                return;
             }
             
             // Priority 2: Close session detail views
@@ -1976,31 +2065,29 @@
                 document.getElementById('setsContainer').style.display = 'block';
                 document.querySelector('.history-section').style.display = 'block';
                 historyStack.back();
-                return false;
+                history.pushState({ page: getCurrentPage(), timestamp: Date.now() }, '', '');
+                return;
             }
             
             // Priority 3: Navigate back in history
             const previousState = historyStack.back();
             
             if (!previousState) {
-                // Only check for active workout when trying to exit the app completely
+                // No more history - check for active workout before letting app close
                 if (workoutActive) {
-                    const currentPage = getCurrentPage();
-                    
-                    if (currentPage === 'workout' && !exerciseModal.classList.contains('active')) {
-                        if (confirm('You have an active workout. Exit app?')) {
-                            finishWorkout();
-                            return false;
-                        } else {
-                            history.pushState({ page: 'workout', timestamp: Date.now() }, '', '');
-                            historyStack.push('workout');
-                            return false;
-                        }
+                    if (confirm('You have an active workout. Exit app?')) {
+                        finishWorkout();
+                        return;
+                    } else {
+                        history.pushState({ page: getCurrentPage(), timestamp: Date.now() }, '', '');
+                        historyStack.push(getCurrentPage());
+                        return;
                     }
                 }
-                return;
+                return; // Let app close
             }
             
+            // Navigate to previous state
             navigateToPage(previousState);
             return false;
         }, false);
@@ -2266,8 +2353,10 @@
             sessionStartTime = state.startTime;
             currentExerciseIndex = state.currentExerciseIndex || 0;
             
+            // Go to the workout tab
             goToDay(currentDay);
             
+            // Start the workout
             workoutActive = true;
             const btn = document.getElementById('startWorkoutBtn');
             const timer = document.getElementById('sessionTimer');
@@ -2278,22 +2367,54 @@
             timer.classList.add('active');
             progress.style.display = 'block';
             
+            // Resume timer
             sessionInterval = setInterval(updateSessionTimer, 1000);
             startAutoSave();
+            
+            // Update progress
             updateProgress();
         }
 
         function showResumePrompt() {
             const state = loadSessionState();
-            if (!state || !state.active) return;
+            if (!state || !state.active) return false;
             
             const elapsed = Math.floor((Date.now() - state.startTime) / 60000);
             
-            if (confirm(`You have an active Day ${state.day} workout from ${elapsed} minutes ago. Resume it?`)) {
-                resumeSession(state);
-            } else {
-                clearSessionState();
-            }
+            const resumeModal = document.createElement('div');
+            resumeModal.className = 'resume-modal';
+            resumeModal.innerHTML = `
+                <div class="resume-content">
+                    <div class="resume-icon">💪</div>
+                    <div class="resume-title">Resume Workout?</div>
+                    <div class="resume-message">
+                        You have an active Day ${state.day} workout from ${elapsed} minutes ago.
+                        Would you like to continue?
+                    </div>
+                    <div class="resume-buttons">
+                        <button class="resume-btn resume-yes" onclick="confirmResume()">Yes, Resume</button>
+                        <button class="resume-btn resume-no" onclick="declineResume()">No, Start Fresh</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(resumeModal);
+            return true;
+        }
+
+        function confirmResume() {
+            const state = loadSessionState();
+            document.querySelector('.resume-modal').remove();
+            resumeSession(state);
+        }
+
+        function declineResume() {
+            clearSessionState();
+            document.querySelector('.resume-modal').remove();
+        }
+
+        function restoreSessionState() {
+            return showResumePrompt();
         }
 
         // ============================================
@@ -2620,8 +2741,8 @@
             const sectionTitles = document.getElementById('setsContainer').parentElement.querySelectorAll('.section-title');
             if (sectionTitles[0]) sectionTitles[0].style.display = 'block';
             
+            // Only update our custom history stack, don't call history.back()
             historyStack.back();
-            history.back();
         }
 
         function getLastWorkoutData(day, exerciseName) {
@@ -2883,9 +3004,6 @@
             document.getElementById('totalVolume').textContent = totalVolume > 0 ? Math.round(totalVolume) + ' kg' : '—';
         }
 
-        // ============================================
-        // FIXED SAVE FUNCTIONS
-        // ============================================
         function saveWorkout() {
             const inputs = document.querySelectorAll('.input-field');
             const sets = [];
@@ -2949,9 +3067,7 @@
             stopRestTimer();
             restTimerSeconds = 90;
 
-            // Just close the modal - don't trigger workout exit
             closeModal();
-            
             renderDay();
             
             if (document.getElementById('statsTab').style.display !== 'none') {
@@ -2960,87 +3076,13 @@
         }
 
         function saveAndNext() {
-            const inputs = document.querySelectorAll('.input-field');
-            const sets = [];
-
-            for (let i = 1; i <= currentSetCount; i++) {
-                const weight = document.querySelector(`[data-set="${i}"][data-type="weight"]`)?.value;
-                const reps = document.querySelector(`[data-set="${i}"][data-type="reps"]`)?.value;
-                if (weight && reps) {
-                    sets.push({ weight: parseFloat(weight), reps: parseInt(reps) });
-                }
-            }
-
-            if (sets.length === 0) {
-                showToast('Please enter at least one set!', 'error');
-                return;
-            }
-
-            try {
-                validateWorkoutInputs(sets);
-            } catch (error) {
-                showToast(error.message, 'error');
-                return;
-            }
-
-            let duration = null;
-            if (currentEditWorkoutId) {
-                const history = JSON.parse(localStorage.getItem('workoutHistory') || '[]');
-                const existing = history.find(w => w.id === currentEditWorkoutId);
-                if (existing) duration = existing.duration;
-            } else if (sessionStartTime) {
-                duration = Math.floor((Date.now() - sessionStartTime) / 60000);
-            }
-
-            const workout = {
-                id: currentEditWorkoutId || Date.now().toString() + '-' + Math.random().toString(36).substr(2, 9),
-                day: currentDay,
-                exercise: currentExercise.name,
-                date: new Date().toISOString(),
-                sets: sets,
-                notes: document.getElementById('exerciseNotes').value,
-                duration: duration
-            };
-
-            let history = JSON.parse(localStorage.getItem('workoutHistory') || '[]');
+            saveWorkout();
             
-            if (currentEditWorkoutId) {
-                const index = history.findIndex(w => w.id === currentEditWorkoutId);
-                if (index !== -1) {
-                    history[index] = workout;
-                }
-                currentEditWorkoutId = null;
-                showToast('Workout updated! ✅', 'success');
-            } else {
-                history.push(workout);
-                showToast('Exercise saved! 💪', 'success');
-            }
-            
-            localStorage.setItem('workoutHistory', JSON.stringify(history));
-
-            document.getElementById('exerciseNotes').value = '';
-            stopRestTimer();
-            restTimerSeconds = 90;
-
-            // CLOSE MODAL FIRST - don't trigger workout exit
-            closeModal();
-            
-            // Then go to next exercise
             const nextIndex = currentExerciseIndex + 1;
             if (nextIndex < workoutData[currentDay].exercises.length) {
-                // Small delay to let modal close animation finish
-                setTimeout(() => {
-                    openExercise(nextIndex);
-                }, 300);
+                setTimeout(() => openExercise(nextIndex), 300);
             } else {
                 showToast('All exercises complete! Great work! 🎉', 'success');
-            }
-            
-            // Update the display
-            renderDay();
-            
-            if (document.getElementById('statsTab').style.display !== 'none') {
-                renderStats();
             }
         }
 
