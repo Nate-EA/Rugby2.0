@@ -1359,7 +1359,7 @@
     <!-- Stats Tab -->
     <div id="statsTab" class="tab-content" style="display: none;">
         <div style="padding: 20px;">
-            <!-- Strength Score Card - NEW -->
+            <!-- Strength Score Card -->
             <div class="strength-score-card" id="strengthScoreCard">
                 <div class="strength-score-value" id="statsCoreScore">0</div>
                 <div class="strength-score-label">CORE STRENGTH SCORE</div>
@@ -1574,43 +1574,43 @@
 
     <script>
         // ============================================
-        // WORKOUT DATA
+        // WORKOUT DATA - CORRECTED WITH PROPER NAMING
         // ============================================
         const workoutData = {
             A: {
                 title: "Day A - Leg Day",
                 description: "Build foundation strength 💪",
-                mobility: "Leg swings, hip circles, bodyweight squats",
+                mobility: "Elevated Pigeon + Couch Stretch (2 × 45s each)",
                 exercises: [
-                    { name: "Zercher Squat", sets: 3, reps: 8 },
-                    { name: "Romanian Deadlift", sets: 3, reps: 8 },
-                    { name: "Incline DB Bench Press", sets: 3, reps: 10 },
-                    { name: "Lat Pulldown", sets: 3, reps: 10 },
-                    { name: "Hanging Knee Raises", sets: 2, reps: "10-15" }
+                    { name: "Zercher Squat", sets: 3, reps: 8 },              // CORE
+                    { name: "Romanian Deadlift", sets: 3, reps: 8 },          // ACCESSORY
+                    { name: "Incline Dumbbell Press", sets: 3, reps: 10 },    // ACCESSORY
+                    { name: "Lat Pulldown", sets: 3, reps: 10 },              // CORE
+                    { name: "Hanging Knee Raises", sets: 2, reps: "10-15" }   // ACCESSORY
                 ]
             },
             B: {
                 title: "Day B - Upper Body Power",
                 description: "Build tackle strength 💪",
-                mobility: "Arm circles, band pull-aparts, cat-cow",
+                mobility: "Elephant Walks (2 × 10/side) + Weighted Butterfly (2 × 45s)",
                 exercises: [
-                    { name: "Deadlift", sets: 3, reps: 5 },
-                    { name: "Zercher Step-Ups", sets: 3, reps: "6/side" },
-                    { name: "Barbell Bench Press", sets: 3, reps: "6-8" },
-                    { name: "Barbell Shoulder Press", sets: 3, reps: 8 },
-                    { name: "Bent-Over Barbell Row", sets: 3, reps: 8 },
-                    { name: "Plank Pull-Through", sets: 2, reps: "8-10/side" }
+                    { name: "Deadlift", sets: 3, reps: 5 },                   // CORE
+                    { name: "Zercher Step-Ups", sets: 3, reps: "6/side" },    // ACCESSORY
+                    { name: "Bench Press", sets: 3, reps: "6-8" },            // CORE
+                    { name: "Standing Shoulder Press", sets: 3, reps: 8 },    // CORE
+                    { name: "Barbell Row", sets: 3, reps: 8 },                // CORE
+                    { name: "Plank Pull-Through", sets: 2, reps: "8-10/side" } // ACCESSORY
                 ]
             },
             C: {
                 title: "Day C - Accessory & Recovery",
                 description: "Stay healthy and mobile ⚡",
-                mobility: "Full body dynamic warm-up",
+                mobility: "Elevated Pigeon + Hip Flexor Stretch (2 × 45s each) + Elephant Walks (2 × 10/side)",
                 exercises: [
-                    { name: "Lateral Lunge", sets: 3, reps: "8-10/side" },
-                    { name: "Bent Knee Calf Raises", sets: 3, reps: "15-20" },
-                    { name: "Face Pulls", sets: 3, reps: 15 },
-                    { name: "4-Way Neck", sets: 3, reps: "12-15 each direction" }
+                    { name: "Lateral Lunge", sets: 3, reps: "8-10/side" },    // ACCESSORY
+                    { name: "Bent Knee Calf Raises", sets: 3, reps: "15-20" }, // ACCESSORY
+                    { name: "Face Pulls", sets: 3, reps: 15 },                // ACCESSORY
+                    { name: "4-Way Neck", sets: 3, reps: "12-15 each direction" } // ACCESSORY
                 ]
             }
         };
@@ -1622,12 +1622,9 @@
             'Zercher Squat': { rookie: 30, built: 45, strong: 60, veteran: 75, elite: 90 },
             'Bench Press': { rookie: 30, built: 40, strong: 50, veteran: 60, elite: 80 },
             'Deadlift': { rookie: 40, built: 60, strong: 80, veteran: 100, elite: 120 },
-            'Shoulder Press': { rookie: 10, built: 20, strong: 30, veteran: 40, elite: 50 },
+            'Standing Shoulder Press': { rookie: 10, built: 20, strong: 30, veteran: 40, elite: 50 },
             'Lat Pulldown': { rookie: 20, built: 35, strong: 50, veteran: 65, elite: 80 },
-            'Barbell Row': { rookie: 20, built: 30, strong: 45, veteran: 60, elite: 75 },
-            // Include variations (these will be ACCESSORIES, not core)
-            'Incline DB Bench Press': { rookie: 25, built: 35, strong: 45, veteran: 55, elite: 70 },
-            'Romanian Deadlift': { rookie: 30, built: 45, strong: 60, veteran: 75, elite: 90 }
+            'Barbell Row': { rookie: 20, built: 30, strong: 45, veteran: 60, elite: 75 }
         };
 
         // ============================================
@@ -1637,7 +1634,7 @@
             'Zercher Squat',
             'Bench Press',
             'Deadlift',
-            'Shoulder Press',
+            'Standing Shoulder Press',
             'Lat Pulldown',
             'Barbell Row'
         ];
@@ -1654,7 +1651,7 @@
                 const exercise = workout.exercise;
                 const max1RM = Math.max(...workout.sets.map(s => calculate1RM(s.weight, s.reps)));
                 
-                // Check if this is a core lift
+                // Check if this is a core lift (exact match only)
                 if (coreLifts.includes(exercise)) {
                     if (!exerciseBest[exercise] || max1RM > exerciseBest[exercise]) {
                         exerciseBest[exercise] = max1RM;
@@ -1681,7 +1678,7 @@
                 const exercise = workout.exercise;
                 const max1RM = Math.max(...workout.sets.map(s => calculate1RM(s.weight, s.reps)));
                 
-                // If it's NOT a core lift, it's an accessory
+                // If it's NOT a core lift (exact match), it's an accessory
                 if (!coreLifts.includes(exercise)) {
                     if (!accessoryBest[exercise] || max1RM > accessoryBest[exercise]) {
                         accessoryBest[exercise] = max1RM;
@@ -1721,29 +1718,7 @@
         // STRENGTH MATRIX FUNCTIONS
         // ============================================
         function getTierAndProgress(currentWeight, exerciseName) {
-            let standards = null;
-            
-            // Map exercise names to matrix keys
-            if (strengthMatrix[exerciseName]) {
-                standards = strengthMatrix[exerciseName];
-            } else if (exerciseName.includes('Zercher')) {
-                standards = strengthMatrix['Zercher Squat'];
-            } else if (exerciseName.includes('Bench Press')) {
-                standards = strengthMatrix['Bench Press'];
-            } else if (exerciseName.includes('Deadlift')) {
-                standards = strengthMatrix['Deadlift'];
-            } else if (exerciseName.includes('Shoulder Press')) {
-                standards = strengthMatrix['Shoulder Press'];
-            } else if (exerciseName.includes('Lat Pulldown')) {
-                standards = strengthMatrix['Lat Pulldown'];
-            } else if (exerciseName.includes('Row')) {
-                standards = strengthMatrix['Barbell Row'];
-            } else if (exerciseName.includes('Romanian')) {
-                standards = strengthMatrix['Romanian Deadlift'];
-            } else if (exerciseName.includes('Incline')) {
-                standards = strengthMatrix['Incline DB Bench Press'];
-            }
-            
+            const standards = strengthMatrix[exerciseName];
             if (!standards) return null;
             
             if (currentWeight >= standards.elite) {
@@ -1810,14 +1785,14 @@
             const workoutHistory = JSON.parse(localStorage.getItem('workoutHistory') || '[]');
             const container = document.getElementById('strengthMatrixGrid');
             
-            // Get best 1RM for each core lift
+            // Get best 1RM for each core lift (exact match only)
             const exerciseBest = {};
             
             workoutHistory.forEach(workout => {
                 const exercise = workout.exercise;
                 const max1RM = Math.max(...workout.sets.map(s => calculate1RM(s.weight, s.reps)));
                 
-                // Only track core lifts in the matrix
+                // Only track core lifts in the matrix (exact match)
                 if (coreLifts.includes(exercise)) {
                     if (!exerciseBest[exercise] || max1RM > exerciseBest[exercise]) {
                         exerciseBest[exercise] = max1RM;
@@ -1833,7 +1808,7 @@
                     <div style="text-align: center; padding: 40px 20px;">
                         <div style="font-size: 48px; margin-bottom: 16px;">💪</div>
                         <div style="font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: var(--niue-blue); margin-bottom: 8px;">No Core Lift Data Yet</div>
-                        <div style="color: #888; font-size: 14px;">Log your main lifts (Zercher, Bench, Deadlift, etc.) to see your Strength Matrix</div>
+                        <div style="color: #888; font-size: 14px;">Log your main lifts (Zercher Squat, Bench Press, Deadlift, etc.) to see your Strength Matrix</div>
                     </div>
                 `;
                 return;
@@ -1857,7 +1832,7 @@
                 'Zercher Squat': '🦵',
                 'Bench Press': '🏋️',
                 'Deadlift': '💪',
-                'Shoulder Press': '🏋️',
+                'Standing Shoulder Press': '🏋️',
                 'Lat Pulldown': '⬇️',
                 'Barbell Row': '⛓️'
             };
