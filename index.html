@@ -1334,6 +1334,182 @@
         .ex-group-body.open {
             display: block;
         }
+        /* ── Strength Matrix tappable cards ── */
+        .matrix-card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px var(--shadow);
+            cursor: pointer;
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .matrix-card:active {
+            transform: scale(0.98);
+        }
+        .matrix-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px var(--shadow);
+        }
+        .matrix-card-chevron {
+            position: absolute;
+            top: 50%;
+            right: 14px;
+            transform: translateY(-50%);
+            font-size: 13px;
+            color: var(--ravens-gold);
+            opacity: 0.8;
+            pointer-events: none;
+        }
+
+        /* ── Tier Detail bottom-sheet modal ── */
+        .tier-modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(1, 33, 105, 0.6);
+            z-index: 1100;
+            align-items: flex-end;
+            justify-content: center;
+            animation: fadeIn 0.25s ease;
+        }
+        .tier-modal-overlay.active {
+            display: flex;
+        }
+        .tier-modal-sheet {
+            background: white;
+            width: 100%;
+            max-width: 520px;
+            border-radius: 20px 20px 0 0;
+            overflow: hidden;
+            animation: sheetUp 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+        }
+        @keyframes sheetUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to   { transform: translateY(0);    opacity: 1; }
+        }
+        .tier-modal-handle {
+            width: 40px;
+            height: 4px;
+            background: #ddd;
+            border-radius: 2px;
+            margin: 12px auto 0;
+            flex-shrink: 0;
+        }
+        .tier-modal-header {
+            background: var(--ravens-purple);
+            padding: 20px 20px 16px;
+            flex-shrink: 0;
+        }
+        .tier-modal-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 22px;
+            color: white;
+            letter-spacing: 0.5px;
+        }
+        .tier-modal-subtitle {
+            color: var(--ravens-gold);
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 2px;
+        }
+        .tier-modal-body {
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .tier-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            border: 2px solid transparent;
+            transition: border-color 0.2s;
+        }
+        .tier-row.current-tier {
+            border-color: var(--ravens-purple);
+            box-shadow: 0 2px 12px rgba(1, 33, 105, 0.15);
+        }
+        .tier-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+        .tier-name {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 17px;
+            letter-spacing: 0.5px;
+            min-width: 72px;
+        }
+        .tier-weight {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 22px;
+            color: var(--ravens-purple);
+            margin-left: auto;
+        }
+        .tier-status {
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .tier-you-badge {
+            background: var(--ravens-purple);
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 20px;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+        .tier-progress-wrap {
+            margin-top: 20px;
+            background: var(--pale-purple);
+            border-radius: 12px;
+            padding: 16px;
+        }
+        .tier-progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--light-purple);
+            margin-bottom: 8px;
+        }
+        .tier-progress-bar-bg {
+            background: #ddd;
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .tier-progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--ravens-gold), var(--ravens-purple));
+            border-radius: 5px;
+            transition: width 0.6s ease;
+        }
+        .tier-close-btn {
+            width: 100%;
+            margin-top: 20px;
+            padding: 14px;
+            background: var(--ravens-purple);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 18px;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+        }
     </style>
 </head>
 <body>
@@ -1866,6 +2042,11 @@
         
         // Helper function to check and close any open modals
         function checkAndCloseModals() {
+            const tierModal = document.getElementById('tierDetailModal');
+            if (tierModal && tierModal.classList.contains('active')) {
+                closeTierModal();
+                return true;
+            }
             if (currentModal) {
                 closeCurrentModal();
                 return true;
@@ -1874,7 +2055,14 @@
         }
         
         window.addEventListener('popstate', function(event) {
-            // Priority 1: Close modals (exercise/summary modal active)
+            // Priority 1: Close tier detail modal
+            const tierModal = document.getElementById('tierDetailModal');
+            if (tierModal && tierModal.classList.contains('active')) {
+                tierModal.classList.remove('active');
+                return;
+            }
+
+            // Priority 2: Close exercise/summary modals
             const exerciseModal = document.getElementById('exerciseModal');
             const summaryModal = document.getElementById('summaryModal');
             
@@ -2283,17 +2471,13 @@
             const exerciseBest = {};
             
             workoutHistory.forEach(workout => {
+                if (workout.sets.length > 0 && workout.sets[0].band) return;
                 const exercise = workout.exercise;
                 const max1RM = Math.max(...workout.sets.map(s => calculate1RM(s.weight || 0, s.reps)));
                 
-                let coreExercise = null;
                 if (coreLifts.includes(exercise)) {
-                    coreExercise = exercise;
-                }
-                
-                if (coreExercise && coreLifts.includes(coreExercise)) {
-                    if (!exerciseBest[coreExercise] || max1RM > exerciseBest[coreExercise]) {
-                        exerciseBest[coreExercise] = max1RM;
+                    if (!exerciseBest[exercise] || max1RM > exerciseBest[exercise]) {
+                        exerciseBest[exercise] = max1RM;
                     }
                 }
             });
@@ -2339,12 +2523,12 @@
                 const result = getTierAndProgress(best, lift);
                 if (!result) return;
                 
-                const standards = strengthMatrix[lift];
                 const icon = liftIcons[lift] || '🏋️';
                 
                 html += `
-                    <div style="background: white; border-radius: 12px; padding: 16px; margin-bottom: 12px; border-left: 4px solid ${result.color}; box-shadow: 0 2px 8px var(--shadow);">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <div class="matrix-card" style="border-left: 4px solid ${result.color};" onclick="showStrengthDetail('${lift.replace(/'/g, "\\'")}')">
+                        <div class="matrix-card-chevron">❯</div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-right: 20px;">
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <span style="font-size: 20px;">${icon}</span>
                                 <span style="font-weight: 600; color: var(--ravens-purple);">${lift}</span>
@@ -2375,6 +2559,110 @@
             });
             
             container.innerHTML = html;
+        }
+
+        function showStrengthDetail(lift) {
+            const standards = strengthMatrix[lift];
+            if (!standards) return;
+
+            const workoutHistory = JSON.parse(localStorage.getItem('workoutHistory') || '[]');
+            const exerciseBest = {};
+            workoutHistory.forEach(workout => {
+                if (workout.sets.length > 0 && workout.sets[0].band) return;
+                const max1RM = Math.max(...workout.sets.map(s => calculate1RM(s.weight || 0, s.reps)));
+                if (coreLifts.includes(workout.exercise)) {
+                    if (!exerciseBest[workout.exercise] || max1RM > exerciseBest[workout.exercise]) {
+                        exerciseBest[workout.exercise] = max1RM;
+                    }
+                }
+            });
+
+            const best = exerciseBest[lift] || 0;
+            const result = getTierAndProgress(best, lift);
+
+            const tiers = [
+                { key: 'rookie',  label: 'ROOKIE',   weight: standards.rookie,   color: '#e0e0e0', textColor: '#666' },
+                { key: 'built',   label: 'BUILT',    weight: standards.built,    color: '#d4edda', textColor: '#155724' },
+                { key: 'strong',  label: 'STRONG',   weight: standards.strong,   color: '#cce5ff', textColor: '#004085' },
+                { key: 'veteran', label: 'VETERAN',  weight: standards.veteran,  color: '#d1ecf1', textColor: '#0c5460' },
+                { key: 'elite',   label: 'ELITE',    weight: standards.elite,    color: '#f8d7da', textColor: '#721c24' }
+            ];
+
+            const currentTierKey = result ? result.tier.toLowerCase() : '';
+            const liftIcons = {
+                'Barbell Bench Press': '🏋️',
+                'Barbell Shoulder Press': '🏋️',
+                'Zercher Squat': '🦵',
+                'Deadlift': '🏉',
+                'Lat Pulldown': '⬇️',
+                'Bent-Over Barbell Row': '⛓️'
+            };
+            const icon = liftIcons[lift] || '🏋️';
+
+            let tiersHTML = '';
+            tiers.forEach(tier => {
+                const isCurrent = tier.label === currentTierKey.toUpperCase();
+                const achieved = best >= tier.weight;
+                const kgToGo = Math.max(0, tier.weight - best).toFixed(1);
+
+                let statusHTML = '';
+                if (isCurrent) {
+                    statusHTML = `<span class="tier-you-badge">YOU ARE HERE</span>`;
+                } else if (achieved) {
+                    statusHTML = `<span class="tier-status" style="color: var(--green);">✅ Done</span>`;
+                } else {
+                    statusHTML = `<span class="tier-status" style="color: #aaa;">+${kgToGo}kg</span>`;
+                }
+
+                tiersHTML += `
+                    <div class="tier-row${isCurrent ? ' current-tier' : ''}" style="background: ${tier.color}20;">
+                        <div class="tier-dot" style="background: ${tier.color}; border: 2px solid ${tier.textColor}40;"></div>
+                        <span class="tier-name" style="color: ${tier.textColor};">${tier.label}</span>
+                        <span class="tier-weight">${tier.weight}kg</span>
+                        ${statusHTML}
+                    </div>
+                `;
+            });
+
+            let progressHTML = '';
+            if (result && result.next) {
+                progressHTML = `
+                    <div class="tier-progress-wrap">
+                        <div class="tier-progress-label">
+                            <span>Progress to ${result.nextTier}</span>
+                            <span>${Math.round(result.progress)}%</span>
+                        </div>
+                        <div class="tier-progress-bar-bg">
+                            <div class="tier-progress-bar-fill" style="width: ${result.progress}%;"></div>
+                        </div>
+                        <div style="text-align: center; margin-top: 10px; font-size: 13px; color: var(--light-purple); font-weight: 600;">
+                            Need <strong>${Math.max(0, result.next - best).toFixed(1)}kg</strong> more to reach ${result.nextTier}
+                        </div>
+                    </div>
+                `;
+            } else if (result && !result.next) {
+                progressHTML = `
+                    <div class="tier-progress-wrap" style="text-align: center;">
+                        <div style="font-size: 28px; margin-bottom: 4px;">🏆</div>
+                        <div style="font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: var(--ravens-purple);">ELITE STATUS ACHIEVED</div>
+                        <div style="font-size: 13px; color: var(--light-purple); margin-top: 4px;">You've reached the top tier for this lift</div>
+                    </div>
+                `;
+            }
+
+            document.getElementById('tierModalTitle').textContent = `${icon} ${lift}`;
+            document.getElementById('tierModalSubtitle').textContent = best > 0 ? `Your best: ${best}kg (Est. 1RM) · ${result ? result.tier : ''}` : 'No data logged yet';
+            document.getElementById('tierModalTiers').innerHTML = tiersHTML;
+            document.getElementById('tierModalProgress').innerHTML = progressHTML;
+
+            document.getElementById('tierDetailModal').classList.add('active');
+            history.pushState({ page: 'modal', type: 'tier-detail', timestamp: Date.now() }, '', '');
+            historyStack.push('modal');
+        }
+
+        function closeTierModal() {
+            document.getElementById('tierDetailModal').classList.remove('active');
+            if (historyStack.getCurrent() === 'modal') historyStack.back();
         }
 
         function renderAccessoryBreakdown(history) {
@@ -5043,5 +5331,21 @@
 
         initialize();
     </script>
+    <div id="tierDetailModal" class="tier-modal-overlay" onclick="if(event.target===this)closeTierModal()">
+        <div class="tier-modal-sheet">
+            <div class="tier-modal-handle"></div>
+            <div class="tier-modal-header" style="position:relative;">
+                <button onclick="closeTierModal()" style="position:absolute;top:14px;right:14px;background:rgba(255,205,0,0.2);border:none;color:var(--ravens-gold);width:32px;height:32px;border-radius:50%;font-size:20px;cursor:pointer;line-height:1;">×</button>
+                <div class="tier-modal-title" id="tierModalTitle"></div>
+                <div class="tier-modal-subtitle" id="tierModalSubtitle"></div>
+            </div>
+            <div class="tier-modal-body">
+                <div style="font-family:'Bebas Neue',sans-serif;font-size:14px;color:#999;letter-spacing:1px;margin-bottom:12px;">TIER BREAKDOWN</div>
+                <div id="tierModalTiers"></div>
+                <div id="tierModalProgress"></div>
+                <button class="tier-close-btn" onclick="closeTierModal()">CLOSE</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
